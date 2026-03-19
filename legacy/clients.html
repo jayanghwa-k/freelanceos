@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreelanceOS — Clients</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --primary:#7367f0; --primary-light:#ede9fd; --primary-dark:#5e50d6;
+    --success:#28c76f; --success-light:#dff5e9;
+    --warning:#ff9f43; --warning-light:#fff3e0;
+    --danger:#ea5455; --danger-light:#fde8e8;
+    --info:#00cfe8; --info-light:#d9f7fb;
+    --bg:#f4f5fb; --sidebar-bg:#2f3349; --sidebar-text:#a3a8c3;
+    --card-bg:#ffffff; --text-primary:#444564; --text-secondary:#a1a4b5;
+    --border:#e7e7ff; --sidebar-width:260px;
+    --sidebar-collapsed-width: 68px; --header-height:64px;
+    --radius:12px; --shadow:0 4px 24px rgba(51,48,100,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Public Sans',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
+
+  
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden;transition:width .28s cubic-bezier(.4,0,.2,1);}
+  .sidebar.collapsed{width:var(--sidebar-collapsed-width);}
+  .sidebar-logo{height:var(--header-height);display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden;white-space:nowrap;}
+  .logo-icon{width:34px;height:34px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;flex-shrink:0;}
+  .logo-text{color:#fff;font-size:18px;font-weight:700;transition:opacity .2s,width .28s;white-space:nowrap;overflow:hidden;}.logo-text span{color:var(--primary);}
+  .sidebar.collapsed .logo-text{opacity:0;width:0;}
+  .sidebar-nav{flex:1;padding:16px 0;overflow-y:auto;overflow-x:hidden;}
+  .nav-section-title{font-size:10.5px;font-weight:600;letter-spacing:1px;color:rgba(163,168,195,.5);text-transform:uppercase;padding:16px 24px 6px;white-space:nowrap;transition:opacity .2s,height .28s,padding .28s;overflow:hidden;}
+  .sidebar.collapsed .nav-section-title{opacity:0;height:0;padding-top:0;padding-bottom:0;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--sidebar-text);font-size:13.5px;font-weight:500;transition:background .2s,color .2s;position:relative;text-decoration:none;overflow:hidden;}
+  .nav-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+  .nav-item.active{color:#fff;background:linear-gradient(270deg,rgba(115,103,240,.1),rgba(115,103,240,.22));}
+  .nav-item.active::before{content:'';position:absolute;right:0;top:0;height:100%;width:3px;background:var(--primary);border-radius:3px 0 0 3px;}
+  .nav-item i{width:18px;font-size:15px;text-align:center;flex-shrink:0;}
+  .nav-item-label{white-space:nowrap;transition:opacity .18s,width .28s;overflow:hidden;}
+  .sidebar.collapsed .nav-item-label{opacity:0;width:0;}
+  .nav-badge{margin-left:auto;background:var(--primary);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap;transition:opacity .18s;flex-shrink:0;}
+  .nav-badge.warning{background:var(--warning);}
+  .sidebar.collapsed .nav-badge{opacity:0;width:0;padding:0;overflow:hidden;}
+  .sidebar-footer{padding:12px;border-top:1px solid rgba(255,255,255,.06);overflow:hidden;}
+  .user-card{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;background:rgba(255,255,255,.05);cursor:pointer;overflow:hidden;}
+  .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0;}
+  .user-info{overflow:hidden;transition:opacity .18s,width .28s;}
+  .sidebar.collapsed .user-info{opacity:0;width:0;}
+  .user-name{color:#fff;font-size:13px;font-weight:600;white-space:nowrap;}.user-role{color:var(--sidebar-text);font-size:11px;white-space:nowrap;}
+  .user-chevron{color:var(--sidebar-text);font-size:12px;transition:opacity .18s;flex-shrink:0;}
+  .sidebar.collapsed .user-chevron{opacity:0;width:0;overflow:hidden;}
+
+  /* SIDEBAR TOGGLE BUTTON */
+  .sidebar-toggle{position:fixed;top:50%;left:var(--sidebar-width);transform:translateY(-50%) translateX(-50%);width:24px;height:48px;background:#fff;border:1.5px solid var(--border);border-radius:0 12px 12px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;z-index:101;transition:left .28s cubic-bezier(.4,0,.2,1),box-shadow .2s,background .2s;box-shadow:2px 0 10px rgba(51,48,100,.08);}
+  .sidebar-toggle:hover{background:var(--primary-light);color:var(--primary);}
+  .sidebar-toggle.collapsed{left:var(--sidebar-collapsed-width);}
+  .sidebar-toggle i{transition:transform .28s;}
+  .sidebar-toggle.collapsed i{transform:rotate(180deg);}
+
+  /* TOOLTIP — shown only when collapsed */
+  .nav-tooltip{position:fixed;left:calc(var(--sidebar-collapsed-width) + 10px);background:#1e1c3c;color:#fff;font-size:12px;font-weight:600;padding:5px 12px;border-radius:7px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:500;}
+  .nav-tooltip::before{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#1e1c3c;border-left:none;}
+  .sidebar.collapsed .nav-item:hover .nav-tooltip{opacity:1;}
+
+  /* MAIN */
+  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
+  .header{height:var(--header-height);background:var(--card-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:90;box-shadow:0 2px 12px rgba(51,48,100,.04);}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .header-title{font-size:17px;font-weight:600;}
+  .breadcrumb{font-size:12px;color:var(--text-secondary);margin-top:1px;display:flex;align-items:center;gap:6px;}
+  .breadcrumb span{color:var(--primary);}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  .header-btn{width:38px;height:38px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:15px;transition:all .2s;position:relative;}
+  .header-btn:hover{background:var(--primary-light);color:var(--primary);}
+  .notif-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:1.5px solid #fff;}
+  .header-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-left:4px;}
+  .content{padding:28px;flex:1;}
+
+  /* PAGE TOP */
+  .page-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
+  .page-title{font-size:22px;font-weight:700;}
+  .page-subtitle{color:var(--text-secondary);font-size:13px;margin-top:3px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);box-shadow:0 4px 18px rgba(115,103,240,.35);}
+  .btn-outline{background:#fff;color:var(--text-primary);border:1.5px solid var(--border);}
+  .btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .mini-stat{background:#fff;border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;}
+  .mini-stat-icon{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .mini-stat-val{font-size:20px;font-weight:700;line-height:1;}
+  .mini-stat-label{font-size:11.5px;color:var(--text-secondary);margin-top:3px;}
+
+  /* FILTER */
+  .filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+  .search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 14px;flex:1;max-width:300px;}
+  .search-box i{color:var(--text-secondary);font-size:13px;}
+  .search-box input{border:none;outline:none;font-size:13px;font-family:inherit;color:var(--text-primary);width:100%;background:transparent;}
+  .search-box input::placeholder{color:var(--text-secondary);}
+  .select-filter{padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;color:var(--text-primary);font-family:inherit;cursor:pointer;outline:none;}
+  .view-toggle{display:flex;background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto;}
+  .view-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);font-size:14px;border:none;background:none;transition:all .2s;}
+  .view-btn.active{background:var(--primary);color:#fff;}
+
+  /* CARD GRID */
+  .clients-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+
+  /* CLIENT CARD */
+  .client-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;}
+  .client-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(51,48,100,.12);}
+  .client-card-top{padding:20px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;}
+  .client-avatar-lg{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0;}
+  .client-card-menu{color:var(--text-secondary);font-size:15px;cursor:pointer;padding:4px;}
+  .client-card-body{padding:14px 20px 18px;}
+  .client-card-name{font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:2px;}
+  .client-card-company{font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;display:flex;align-items:center;gap:5px;}
+  .client-card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--primary-light);color:var(--primary);}
+  .client-card-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid #f0f0f7;margin:0 -20px;padding:12px 20px 0;}
+  .cs-item{text-align:center;}
+  .cs-item+.cs-item{border-left:1px solid #f0f0f7;}
+  .cs-val{font-size:15px;font-weight:700;color:var(--text-primary);}
+  .cs-label{font-size:10.5px;color:var(--text-secondary);margin-top:2px;}
+  .client-card-footer{padding:12px 20px;border-top:1px solid #f0f0f7;display:flex;align-items:center;justify-content:space-between;}
+  .contact-links{display:flex;gap:6px;}
+  .contact-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:12px;cursor:pointer;transition:all .2s;text-decoration:none;}
+  .contact-btn:hover{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .status-dot{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;}
+  .dot{width:7px;height:7px;border-radius:50%;}
+
+  /* LIST VIEW */
+  .clients-list{display:none;}
+  .clients-list.active{display:block;}
+  .clients-grid.hidden{display:none;}
+  .list-table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .list-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-secondary);padding:12px 18px;text-align:left;background:#fafafe;border-bottom:1px solid var(--border);}
+  .list-table td{padding:14px 18px;font-size:13px;border-bottom:1px solid #f4f4f9;vertical-align:middle;}
+  .list-table tr:last-child td{border-bottom:none;}
+  .list-table tr:hover td{background:#fafafe;cursor:pointer;}
+  .list-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;}
+  .client-cell{display:flex;align-items:center;gap:12px;}
+  .client-cell-info .name{font-size:13.5px;font-weight:600;}
+  .client-cell-info .company{font-size:11.5px;color:var(--text-secondary);margin-top:1px;}
+  .action-btn{width:30px;height:30px;border-radius:6px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:12px;transition:all .2s;}
+  .action-btn:hover{background:var(--primary-light);color:var(--primary);}
+
+  /* DETAIL PANEL */
+  .detail-overlay{position:fixed;inset:0;background:rgba(30,28,60,.4);z-index:200;display:none;justify-content:flex-end;backdrop-filter:blur(2px);}
+  .detail-overlay.open{display:flex;}
+  .detail-panel{width:420px;max-width:95vw;background:#fff;height:100vh;overflow-y:auto;box-shadow:-10px 0 40px rgba(51,48,100,.15);animation:slideIn .3s ease;}
+  @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .detail-header{padding:22px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10;}
+  .detail-title{font-size:16px;font-weight:700;}
+  .detail-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:14px;}
+  .detail-close:hover{background:var(--danger-light);color:var(--danger);}
+  .detail-body{padding:24px;}
+  .detail-avatar-section{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+  .detail-avatar{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;}
+  .detail-name{font-size:18px;font-weight:700;}
+  .detail-company{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+  .detail-status{margin-top:6px;}
+  .detail-section{margin-bottom:22px;}
+  .detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-secondary);margin-bottom:12px;}
+  .detail-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:11px;}
+  .detail-row i{width:16px;color:var(--text-secondary);font-size:13px;margin-top:1px;}
+  .detail-row-label{font-size:11.5px;color:var(--text-secondary);margin-bottom:1px;}
+  .detail-row-val{font-size:13px;font-weight:500;color:var(--text-primary);}
+  .detail-divider{height:1px;background:var(--border);margin:20px 0;}
+  .proj-mini{background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+  .proj-mini-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+  .proj-mini-name{font-size:13px;font-weight:600;}
+  .proj-mini-bar{height:4px;background:#e0e0ef;border-radius:10px;overflow:hidden;}
+  .proj-mini-fill{height:100%;border-radius:10px;}
+  .proj-mini-meta{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text-secondary);}
+  .invoice-mini{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f4f4f9;}
+  .invoice-mini:last-child{border-bottom:none;}
+  .invoice-mini-id{font-size:12.5px;font-weight:600;color:var(--primary);}
+  .invoice-mini-date{font-size:11.5px;color:var(--text-secondary);}
+  .invoice-mini-amount{font-size:13px;font-weight:700;}
+  .badge{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;}
+  .badge-paid{background:var(--success-light);color:var(--success);}
+  .badge-pending{background:var(--warning-light);color:var(--warning);}
+  .badge-active{background:var(--success-light);color:var(--success);}
+  .badge-inactive{background:#f0f0f0;color:#888;}
+  .note-box{background:var(--bg);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-primary);line-height:1.6;}
+  .detail-actions{display:flex;gap:8px;margin-top:4px;}
+
+  /* ADD MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(30,28,60,.45);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(51,48,100,.2);animation:modalIn .25s ease;}
+  @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+  .modal-header{padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between;}
+  .modal-title{font-size:17px;font-weight:700;}
+  .modal-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:14px;}
+  .modal-close:hover{background:var(--danger-light);color:var(--danger);}
+  .modal-body{padding:20px 26px 26px;}
+  .form-group{margin-bottom:16px;}
+  .form-label{font-size:12.5px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:block;}
+  .form-input{width:100%;padding:9px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:13.5px;font-family:inherit;color:var(--text-primary);outline:none;transition:border-color .2s;}
+  .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(115,103,240,.1);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a1a4b5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;}
+  .color-picker-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .color-swatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:all .15s;}
+  .color-swatch.selected{border-color:#333;transform:scale(1.1);}
+
+  @media(max-width:1200px){.clients-grid{grid-template-columns:repeat(2,1fr);}.stats-row{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:900px){:root{--sidebar-width:220px;}}
+  @media(max-width:700px){.sidebar{transform:translateX(-100);}.main{margin-left:0;}.clients-grid{grid-template-columns:1fr;}.content{padding:16px;}}
+  ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#d0d0e8;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">F</div>
+    <div class="logo-text">Freelance<span>OS</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+    <a class="nav-item" href="projects.html"><i class="fa-solid fa-folder-open"></i> Projects <span class="nav-badge">4</span></a>
+    <a class="nav-item" href="calendar.html"><i class="fa-solid fa-calendar-days"></i> Calendar</a>
+    <div class="nav-section-title">Finance</div>
+    <a class="nav-item" href="invoices.html"><i class="fa-solid fa-file-invoice-dollar"></i> Invoices <span class="nav-badge warning">2</span></a>
+    <a class="nav-item" href="#"><i class="fa-solid fa-chart-line"></i> Revenue</a>
+    <div class="nav-section-title">Clients</div>
+    <a class="nav-item active" href="#"><i class="fa-solid fa-users"></i> Clients</a>
+    <a class="nav-item" href="#"><i class="fa-solid fa-envelope"></i> Messages</a>
+    <div class="nav-section-title">Settings</div>
+    <a class="nav-item" href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">JD</div>
+      <div class="user-info"><div class="user-name">John Doe</div><div class="user-role">Freelancer</div></div>
+      <i class="fa-solid fa-ellipsis-vertical user-chevron"></i></div></div></aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="header">
+    <div class="header-left">
+      <div>
+        <div class="header-title">Clients</div>
+        <div class="breadcrumb">Home <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>Clients</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button class="header-btn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
+      <div class="header-avatar">JD</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-top">
+      <div>
+        <div class="page-title">클라이언트 관리</div>
+        <div class="page-subtitle">총 12명 · 9명 활성</div>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('addClientModal').classList.add('open')">
+        <i class="fa-solid fa-plus"></i> 클라이언트 추가
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--primary-light);color:var(--primary)"><i class="fa-solid fa-users"></i></div>
+        <div><div class="mini-stat-val">12</div><div class="mini-stat-label">전체 클라이언트</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--success-light);color:var(--success)"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="mini-stat-val">9</div><div class="mini-stat-label">활성 클라이언트</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--warning-light);color:var(--warning)"><i class="fa-solid fa-won-sign"></i></div>
+        <div><div class="mini-stat-val">₩18.4M</div><div class="mini-stat-label">총 수익</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--info-light);color:var(--info)"><i class="fa-solid fa-star"></i></div>
+        <div><div class="mini-stat-val">4.8</div><div class="mini-stat-label">평균 만족도</div></div>
+      </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="이름, 회사, 이메일 검색...">
+      </div>
+      <select class="select-filter">
+        <option>모든 상태</option>
+        <option>활성</option>
+        <option>비활성</option>
+      </select>
+      <select class="select-filter">
+        <option>정렬: 이름순</option>
+        <option>정렬: 수익 높은순</option>
+        <option>정렬: 프로젝트 많은순</option>
+        <option>정렬: 최근 추가순</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridBtn" onclick="setView('grid')"><i class="fa-solid fa-grip"></i></button>
+        <button class="view-btn" id="listBtn" onclick="setView('list')"><i class="fa-solid fa-list"></i></button>
+      </div>
+    </div>
+
+    <!-- CARD GRID -->
+    <div class="clients-grid" id="gridView">
+
+      <!-- Client 1 -->
+      <div class="client-card" onclick="openDetail('한국패션')">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#7367f0,#a78bfa)">한</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-active">활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">김한국</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> (주)한국패션</div>
+          <div class="client-card-tags">
+            <span class="tag">웹개발</span>
+            <span class="tag">브랜딩</span>
+            <span class="tag">UI/UX</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">3</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩3.2M</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐4.9</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="/cdn-cgi/l/email-protection#640f0d09240f024a070b4a0f16" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="tel:01012341234" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-brands fa-slack"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:var(--success)"></div><span style="font-size:11.5px;color:var(--text-secondary)">방금 활동</span></div>
+        </div>
+      </div>
+
+      <!-- Client 2 -->
+      <div class="client-card" onclick="openDetail('스타트업A')">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#28c76f,#48da89)">스</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-active">활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">이스타</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> 스타트업A</div>
+          <div class="client-card-tags">
+            <span class="tag" style="background:var(--success-light);color:var(--success)">브랜딩</span>
+            <span class="tag" style="background:var(--success-light);color:var(--success)">로고</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">2</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩1.8M</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐4.7</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-brands fa-kakao-talk" style="font-size:13px"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:var(--success)"></div><span style="font-size:11.5px;color:var(--text-secondary)">1시간 전</span></div>
+        </div>
+      </div>
+
+      <!-- Client 3 -->
+      <div class="client-card" onclick="openDetail('테크벤처B')">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#ff9f43,#ffb976)">테</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-active">활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">박테크</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> 테크벤처B</div>
+          <div class="client-card-tags">
+            <span class="tag" style="background:var(--warning-light);color:var(--warning)">UI/UX</span>
+            <span class="tag" style="background:var(--warning-light);color:var(--warning)">앱디자인</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">2</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩2.1M</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐4.8</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-brands fa-slack"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:var(--warning)"></div><span style="font-size:11.5px;color:var(--text-secondary)">3일 전</span></div>
+        </div>
+      </div>
+
+      <!-- Client 4 -->
+      <div class="client-card" onclick="openDetail('글로벌커머스')">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#00cfe8,#1de9b6)">글</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-active">활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">최글로벌</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> 글로벌커머스</div>
+          <div class="client-card-tags">
+            <span class="tag" style="background:var(--info-light);color:var(--info)">랜딩페이지</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">1</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩600K</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐4.5</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:var(--text-secondary)"></div><span style="font-size:11.5px;color:var(--text-secondary)">1주 전</span></div>
+        </div>
+      </div>
+
+      <!-- Client 5 -->
+      <div class="client-card">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#ea5455,#f08182)">미</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-inactive">비활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">정미디어</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> 미디어그룹D</div>
+          <div class="client-card-tags">
+            <span class="tag" style="background:#f0f0f0;color:#888">콘텐츠</span>
+            <span class="tag" style="background:#f0f0f0;color:#888">SEO</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">2</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩900K</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐4.3</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:#ccc"></div><span style="font-size:11.5px;color:var(--text-secondary)">한 달 전</span></div>
+        </div>
+      </div>
+
+      <!-- Client 6 -->
+      <div class="client-card">
+        <div class="client-card-top">
+          <div class="client-avatar-lg" style="background:linear-gradient(135deg,#667eea,#764ba2)">엔</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge badge-active">활성</span>
+            <span class="client-card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+        </div>
+        <div class="client-card-body">
+          <div class="client-card-name">송엔터</div>
+          <div class="client-card-company"><i class="fa-solid fa-building" style="font-size:10px"></i> 엔터프라이즈C</div>
+          <div class="client-card-tags">
+            <span class="tag">기획</span>
+            <span class="tag">UX리서치</span>
+          </div>
+          <div class="client-card-stats">
+            <div class="cs-item"><div class="cs-val">1</div><div class="cs-label">프로젝트</div></div>
+            <div class="cs-item"><div class="cs-val">₩1.5M</div><div class="cs-label">총 수익</div></div>
+            <div class="cs-item"><div class="cs-val">⭐5.0</div><div class="cs-label">만족도</div></div>
+          </div>
+        </div>
+        <div class="client-card-footer">
+          <div class="contact-links">
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-envelope"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-solid fa-phone"></i></a>
+            <a class="contact-btn" href="#" onclick="event.stopPropagation()"><i class="fa-brands fa-slack"></i></a>
+          </div>
+          <div class="status-dot"><div class="dot" style="background:var(--success)"></div><span style="font-size:11.5px;color:var(--text-secondary)">오늘</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="clients-list" id="listView">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>클라이언트</th>
+            <th>연락처</th>
+            <th>프로젝트</th>
+            <th>총 수익</th>
+            <th>상태</th>
+            <th>마지막 활동</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="openDetail('한국패션')">
+            <td><div class="client-cell"><div class="list-avatar" style="background:linear-gradient(135deg,#7367f0,#a78bfa)">한</div><div class="client-cell-info"><div class="name">김한국</div><div class="company">(주)한국패션</div></div></div></td>
+            <td><div style="font-size:12.5px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d0bbb9bd90bbb6feb3bffebba2">[email&#160;protected]</a></div><div style="font-size:11.5px;color:var(--text-secondary)">010-1234-1234</div></td>
+            <td style="font-weight:600">3</td>
+            <td style="font-weight:700">₩3,200,000</td>
+            <td><span class="badge badge-active">활성</span></td>
+            <td style="font-size:12px;color:var(--text-secondary)">방금 전</td>
+            <td><div style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></div></td>
+          </tr>
+          <tr onclick="openDetail('스타트업A')">
+            <td><div class="client-cell"><div class="list-avatar" style="background:linear-gradient(135deg,#28c76f,#48da89)">스</div><div class="client-cell-info"><div class="name">이스타</div><div class="company">스타트업A</div></div></div></td>
+            <td><div style="font-size:12.5px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6e020b0b2e1d1a0f1c1a1b1e0f400701">[email&#160;protected]</a></div><div style="font-size:11.5px;color:var(--text-secondary)">010-5678-5678</div></td>
+            <td style="font-weight:600">2</td>
+            <td style="font-weight:700">₩1,800,000</td>
+            <td><span class="badge badge-active">활성</span></td>
+            <td style="font-size:12px;color:var(--text-secondary)">1시간 전</td>
+            <td><div style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></div></td>
+          </tr>
+          <tr onclick="openDetail('테크벤처B')">
+            <td><div class="client-cell"><div class="list-avatar" style="background:linear-gradient(135deg,#ff9f43,#ffb976)">테</div><div class="client-cell-info"><div class="name">박테크</div><div class="company">테크벤처B</div></div></div></td>
+            <td><div style="font-size:12.5px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6c1c0d1e072c18090f041a0e420f0301">[email&#160;protected]</a></div><div style="font-size:11.5px;color:var(--text-secondary)">010-9999-8888</div></td>
+            <td style="font-weight:600">2</td>
+            <td style="font-weight:700">₩2,100,000</td>
+            <td><span class="badge badge-active">활성</span></td>
+            <td style="font-size:12px;color:var(--text-secondary)">3일 전</td>
+            <td><div style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></div></td>
+          </tr>
+          <tr>
+            <td><div class="client-cell"><div class="list-avatar" style="background:linear-gradient(135deg,#ea5455,#f08182)">미</div><div class="client-cell-info"><div class="name">정미디어</div><div class="company">미디어그룹D</div></div></div></td>
+            <td><div style="font-size:12.5px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cea4bba0a98ea3abaaa7afaae0a5bc">[email&#160;protected]</a></div><div style="font-size:11.5px;color:var(--text-secondary)">010-3333-4444</div></td>
+            <td style="font-weight:600">2</td>
+            <td style="font-weight:700">₩900,000</td>
+            <td><span class="badge badge-inactive">비활성</span></td>
+            <td style="font-size:12px;color:var(--text-secondary)">한 달 전</td>
+            <td><div style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel">
+    <div class="detail-header">
+      <div class="detail-title">클라이언트 상세</div>
+      <button class="detail-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-avatar-section">
+        <div class="detail-avatar" id="detailAvatar" style="background:linear-gradient(135deg,#7367f0,#a78bfa)">한</div>
+        <div>
+          <div class="detail-name" id="detailName">김한국</div>
+          <div class="detail-company" id="detailCompany">(주)한국패션</div>
+          <div class="detail-status"><span class="badge badge-active">활성</span></div>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:12.5px;padding:8px"><i class="fa-solid fa-file-invoice"></i> 인보이스 발행</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12.5px;padding:8px"><i class="fa-solid fa-pen"></i> 정보 수정</button>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">연락처 정보</div>
+        <div class="detail-row"><i class="fa-solid fa-envelope"></i><div><div class="detail-row-label">이메일</div><div class="detail-row-val" id="detailEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="03686a6e4368652d606c2d6871">[email&#160;protected]</a></div></div></div>
+        <div class="detail-row"><i class="fa-solid fa-phone"></i><div><div class="detail-row-label">전화번호</div><div class="detail-row-val">010-1234-1234</div></div></div>
+        <div class="detail-row"><i class="fa-solid fa-location-dot"></i><div><div class="detail-row-label">주소</div><div class="detail-row-val">서울시 강남구 테헤란로 123</div></div></div>
+        <div class="detail-row"><i class="fa-solid fa-globe"></i><div><div class="detail-row-label">웹사이트</div><div class="detail-row-val">www.kfashion.co.kr</div></div></div>
+        <div class="detail-row"><i class="fa-solid fa-calendar-plus"></i><div><div class="detail-row-label">등록일</div><div class="detail-row-val">2024.08.15</div></div></div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">진행 중인 프로젝트</div>
+        <div class="proj-mini">
+          <div class="proj-mini-top">
+            <span class="proj-mini-name">쇼핑몰 웹사이트 리뉴얼</span>
+            <span class="badge" style="background:var(--primary-light);color:var(--primary);font-size:10px">진행 중</span>
+          </div>
+          <div class="proj-mini-bar"><div class="proj-mini-fill" style="width:72%;background:var(--primary)"></div></div>
+          <div class="proj-mini-meta"><span>72% 완료</span><span>마감: 3/31</span></div>
+        </div>
+        <div class="proj-mini">
+          <div class="proj-mini-top">
+            <span class="proj-mini-name">마케팅 배너 제작</span>
+            <span class="badge" style="background:var(--success-light);color:var(--success);font-size:10px">완료</span>
+          </div>
+          <div class="proj-mini-bar"><div class="proj-mini-fill" style="width:100%;background:var(--success)"></div></div>
+          <div class="proj-mini-meta"><span>100% 완료</span><span>완료: 2/20</span></div>
+        </div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">인보이스 내역</div>
+        <div class="invoice-mini">
+          <div><div class="invoice-mini-id">#INV-024</div><div class="invoice-mini-date">2025.03.01</div></div>
+          <div style="text-align:right"><div class="invoice-mini-amount">₩1,200,000</div><span class="badge badge-pending">대기</span></div>
+        </div>
+        <div class="invoice-mini">
+          <div><div class="invoice-mini-id">#INV-019</div><div class="invoice-mini-date">2025.01.15</div></div>
+          <div style="text-align:right"><div class="invoice-mini-amount">₩2,000,000</div><span class="badge badge-paid">완료</span></div>
+        </div>
+      </div>
+
+      <div class="detail-divider"></div>
+
+      <div class="detail-section">
+        <div class="detail-section-title">메모</div>
+        <div class="note-box">선호 커뮤니케이션: 카카오톡 / 매주 금요일 오전 미팅. 디자인 시안은 PDF로 제출 요청. 결제는 계좌이체 선호.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="addClientModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">클라이언트 추가</div>
+      <button class="modal-close" onclick="document.getElementById('addClientModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#a78bfa);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff" id="previewAvatar">?</div>
+        <div>
+          <div style="font-size:12.5px;font-weight:600;margin-bottom:8px">아바타 색상</div>
+          <div class="color-picker-row">
+            <div class="color-swatch selected" style="background:linear-gradient(135deg,#7367f0,#a78bfa)" onclick="selectColor(this,'linear-gradient(135deg,#7367f0,#a78bfa)')"></div>
+            <div class="color-swatch" style="background:linear-gradient(135deg,#28c76f,#48da89)" onclick="selectColor(this,'linear-gradient(135deg,#28c76f,#48da89)')"></div>
+            <div class="color-swatch" style="background:linear-gradient(135deg,#ff9f43,#ffb976)" onclick="selectColor(this,'linear-gradient(135deg,#ff9f43,#ffb976)')"></div>
+            <div class="color-swatch" style="background:linear-gradient(135deg,#00cfe8,#1de9b6)" onclick="selectColor(this,'linear-gradient(135deg,#00cfe8,#1de9b6)')"></div>
+            <div class="color-swatch" style="background:linear-gradient(135deg,#ea5455,#f08182)" onclick="selectColor(this,'linear-gradient(135deg,#ea5455,#f08182)')"></div>
+            <div class="color-swatch" style="background:linear-gradient(135deg,#667eea,#764ba2)" onclick="selectColor(this,'linear-gradient(135deg,#667eea,#764ba2)')"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">이름 *</label>
+          <input class="form-input" type="text" placeholder="홍길동" id="clientNameInput" oninput="updatePreview(this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">회사명 *</label>
+          <input class="form-input" type="text" placeholder="(주)회사명">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">이메일 *</label>
+          <input class="form-input" type="email" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">전화번호</label>
+          <input class="form-input" type="tel" placeholder="010-0000-0000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">카테고리</label>
+          <select class="form-input form-select">
+            <option>웹개발</option><option>UI/UX</option><option>브랜딩</option>
+            <option>콘텐츠</option><option>SEO</option><option>기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-input form-select"><option>활성</option><option>비활성</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">주소</label>
+        <input class="form-input" type="text" placeholder="서울시 강남구...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">웹사이트</label>
+        <input class="form-input" type="url" placeholder="https://www.example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모</label>
+        <textarea class="form-input" rows="3" placeholder="커뮤니케이션 방식, 결제 방법, 특이사항 등..." style="resize:vertical"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('addClientModal').classList.remove('open')">취소</button>
+        <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> 클라이언트 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function setView(type) {
+    const grid = document.getElementById('gridView');
+    const list = document.getElementById('listView');
+    const gridBtn = document.getElementById('gridBtn');
+    const listBtn = document.getElementById('listBtn');
+    if (type === 'grid') {
+      grid.classList.remove('hidden'); list.classList.remove('active');
+      gridBtn.classList.add('active'); listBtn.classList.remove('active');
+    } else {
+      grid.classList.add('hidden'); list.class
+<script id="sidebarToggleScript">
+  (function(){
+    var STORAGE_KEY = 'fos_sidebar_collapsed';
+    var sidebar = document.querySelector('.sidebar');
+    var toggle  = document.getElementById('sidebarToggle');
+    var main    = document.querySelector('.main');
+
+    function applyCollapsed(collapsed, animate){
+      if(!animate){
+        sidebar.style.transition = 'none';
+        if(toggle) toggle.style.transition = 'none';
+        if(main) main.style.transition = 'none';
+      }
+      if(collapsed){
+        sidebar.classList.add('collapsed');
+        if(toggle) toggle.classList.add('collapsed');
+        if(main) main.style.marginLeft = 'var(--sidebar-collapsed-width)';
+      } else {
+        sidebar.classList.remove('collapsed');
+        if(toggle) toggle.classList.remove('collapsed');
+        if(main) main.style.marginLeft = 'var(--sidebar-width)';
+      }
+      if(!animate){
+        sidebar.offsetHeight;
+        sidebar.style.transition = '';
+        if(toggle) toggle.style.transition = '';
+        if(main) main.style.transition = '';
+      }
+    }
+
+    window.toggleSidebar = function(){
+      var isCollapsed = sidebar.classList.contains('collapsed');
+      applyCollapsed(!isCollapsed, true);
+      localStorage.setItem(STORAGE_KEY, !isCollapsed ? '1' : '0');
+    };
+
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if(saved === '1') applyCollapsed(true, false);
+  })();
+</script>

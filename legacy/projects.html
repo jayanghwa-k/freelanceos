@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreelanceOS — Projects</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #7367f0;
+    --primary-light: #ede9fd;
+    --primary-dark: #5e50d6;
+    --success: #28c76f;
+    --success-light: #dff5e9;
+    --warning: #ff9f43;
+    --warning-light: #fff3e0;
+    --danger: #ea5455;
+    --danger-light: #fde8e8;
+    --info: #00cfe8;
+    --info-light: #d9f7fb;
+    --bg: #f4f5fb;
+    --sidebar-bg: #2f3349;
+    --sidebar-text: #a3a8c3;
+    --card-bg: #ffffff;
+    --text-primary: #444564;
+    --text-secondary: #a1a4b5;
+    --border: #e7e7ff;
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 68px;
+    --header-height: 64px;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(51,48,100,.06);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Public Sans',sans-serif; background:var(--bg); color:var(--text-primary); display:flex; min-height:100vh; }
+
+  
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;overflow:hidden;transition:width .28s cubic-bezier(.4,0,.2,1);}
+  .sidebar.collapsed{width:var(--sidebar-collapsed-width);}
+  .sidebar-logo{height:var(--header-height);display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden;white-space:nowrap;}
+  .logo-icon{width:34px;height:34px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;flex-shrink:0;}
+  .logo-text{color:#fff;font-size:18px;font-weight:700;transition:opacity .2s;white-space:nowrap;}.logo-text span{color:var(--primary);}
+  .sidebar.collapsed .logo-text{opacity:0;width:0;overflow:hidden;}
+  .sidebar-nav{flex:1;padding:16px 0;overflow-y:auto;overflow-x:hidden;}
+  .nav-section-title{font-size:10.5px;font-weight:600;letter-spacing:1px;color:rgba(163,168,195,.5);text-transform:uppercase;padding:20px 24px 8px;white-space:nowrap;overflow:hidden;transition:opacity .2s,padding .28s;}
+  .sidebar.collapsed .nav-section-title{opacity:0;padding-top:10px;padding-bottom:4px;height:0;overflow:hidden;margin:0;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--sidebar-text);font-size:13.5px;font-weight:500;transition:all .2s;position:relative;text-decoration:none;white-space:nowrap;overflow:hidden;}
+  .nav-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+  .nav-item.active{color:#fff;background:linear-gradient(270deg,rgba(115,103,240,.1),rgba(115,103,240,.22));}
+  .nav-item.active::before{content:'';position:absolute;right:0;top:0;height:100%;width:3px;background:var(--primary);border-radius:3px 0 0 3px;}
+  .nav-item i{width:18px;font-size:15px;text-align:center;flex-shrink:0;}
+  .nav-item-label{transition:opacity .2s;white-space:nowrap;}
+  .sidebar.collapsed .nav-item-label{opacity:0;width:0;overflow:hidden;}
+  .nav-badge{margin-left:auto;background:var(--primary);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;transition:opacity .2s;flex-shrink:0;}
+  .nav-badge.warning{background:var(--warning);}
+  .sidebar.collapsed .nav-badge{opacity:0;width:0;padding:0;overflow:hidden;}
+  .sidebar-footer{padding:12px;border-top:1px solid rgba(255,255,255,.06);overflow:hidden;}
+  .user-card{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.05);cursor:pointer;white-space:nowrap;overflow:hidden;}
+  .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0;}
+  .user-info{transition:opacity .2s;overflow:hidden;}
+  .sidebar.collapsed .user-info{opacity:0;width:0;}
+  .user-name{color:#fff;font-size:13px;font-weight:600;}.user-role{color:var(--sidebar-text);font-size:11px;}
+  .user-card .user-chevron{color:var(--sidebar-text);font-size:12px;transition:opacity .2s;}
+  .sidebar.collapsed .user-chevron{opacity:0;width:0;}
+
+  /* TOGGLE BUTTON */
+  .sidebar-toggle{position:fixed;top:50%;left:var(--sidebar-width);transform:translateY(-50%) translateX(-50%);width:24px;height:48px;background:#fff;border:1.5px solid var(--border);border-radius:0 12px 12px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;z-index:101;transition:left .28s cubic-bezier(.4,0,.2,1),box-shadow .2s;box-shadow:2px 0 10px rgba(51,48,100,.08);}
+  .sidebar-toggle:hover{background:var(--primary-light);color:var(--primary);box-shadow:2px 0 16px rgba(115,103,240,.18);}
+  .sidebar-toggle.collapsed{left:var(--sidebar-collapsed-width);}
+  .sidebar-toggle i{transition:transform .28s;}
+  .sidebar-toggle.collapsed i{transform:rotate(180deg);}
+
+  /* TOOLTIP for collapsed nav */
+  .nav-item{position:relative;}
+  .nav-tooltip{position:absolute;left:calc(var(--sidebar-collapsed-width) + 8px);top:50%;transform:translateY(-50%);background:#2f3349;color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;}
+  .nav-tooltip::before{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:#2f3349;border-left:none;}
+  .sidebar.collapsed .nav-item:hover .nav-tooltip{opacity:1;}
+
+  /* MAIN */
+  .main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+
+  /* HEADER */
+  .header { height:var(--header-height); background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:90; box-shadow:0 2px 12px rgba(51,48,100,.04); }
+  .header-left { display:flex; align-items:center; gap:16px; }
+  .header-title { font-size:17px; font-weight:600; }
+  .breadcrumb { font-size:12px; color:var(--text-secondary); margin-top:1px; display:flex; align-items:center; gap:6px; }
+  .breadcrumb span { color:var(--primary); }
+  .header-right { display:flex; align-items:center; gap:8px; }
+  .header-btn { width:38px; height:38px; border-radius:8px; border:none; background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:15px; transition:all .2s; position:relative; }
+  .header-btn:hover { background:var(--primary-light); color:var(--primary); }
+  .notif-dot { position:absolute; top:8px; right:8px; width:7px; height:7px; border-radius:50%; background:var(--danger); border:1.5px solid #fff; }
+  .header-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#a78bfa); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; cursor:pointer; margin-left:4px; }
+
+  /* CONTENT */
+  .content { padding:28px; flex:1; }
+
+  /* PAGE HEADER */
+  .page-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:14px; }
+  .page-title { font-size:22px; font-weight:700; }
+  .page-subtitle { color:var(--text-secondary); font-size:13px; margin-top:3px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; border:none; transition:all .2s; font-family:inherit; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover { background:var(--primary-dark); box-shadow:0 4px 18px rgba(115,103,240,.35); }
+  .btn-outline { background:#fff; color:var(--text-primary); border:1.5px solid var(--border); }
+  .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+
+  /* FILTER BAR */
+  .filter-bar { display:flex; align-items:center; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
+  .filter-tabs { display:flex; background:#fff; border-radius:8px; border:1.5px solid var(--border); overflow:hidden; }
+  .filter-tab { padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text-secondary); transition:all .2s; border:none; background:none; font-family:inherit; }
+  .filter-tab.active { background:var(--primary); color:#fff; }
+  .filter-tab:hover:not(.active) { background:var(--bg); }
+  .search-box { display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--border); border-radius:8px; padding:7px 14px; flex:1; max-width:280px; }
+  .search-box i { color:var(--text-secondary); font-size:13px; }
+  .search-box input { border:none; outline:none; font-size:13px; font-family:inherit; color:var(--text-primary); width:100%; background:transparent; }
+  .search-box input::placeholder { color:var(--text-secondary); }
+  .select-filter { padding:8px 14px; border-radius:8px; border:1.5px solid var(--border); background:#fff; font-size:13px; color:var(--text-primary); font-family:inherit; cursor:pointer; outline:none; }
+  .view-toggle { display:flex; background:#fff; border:1.5px solid var(--border); border-radius:8px; overflow:hidden; margin-left:auto; }
+  .view-btn { width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-secondary); font-size:14px; border:none; background:none; transition:all .2s; }
+  .view-btn.active { background:var(--primary); color:#fff; }
+
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .mini-stat { background:#fff; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow); display:flex; align-items:center; gap:14px; }
+  .mini-stat-icon { width:42px; height:42px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .mini-stat-val { font-size:20px; font-weight:700; line-height:1; }
+  .mini-stat-label { font-size:11.5px; color:var(--text-secondary); margin-top:3px; }
+
+  /* KANBAN */
+  .kanban-board { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .kanban-col { background:#f0f1f8; border-radius:var(--radius); padding:16px; min-height:400px; }
+  .kanban-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .kanban-col-title { font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .col-count { background:#fff; color:var(--text-secondary); font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; }
+  .kanban-add { width:26px; height:26px; border-radius:6px; border:none; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:13px; transition:all .2s; }
+  .kanban-add:hover { background:var(--primary); color:#fff; }
+
+  /* PROJECT CARD */
+  .project-card { background:#fff; border-radius:10px; padding:16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(51,48,100,.05); cursor:grab; transition:all .2s; border:1.5px solid transparent; }
+  .project-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(51,48,100,.1); border-color:var(--primary-light); }
+  .project-card:active { cursor:grabbing; }
+  .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .card-tag { font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:4px; }
+  .card-menu { color:var(--text-secondary); font-size:13px; cursor:pointer; padding:2px 4px; }
+  .card-title-text { font-size:13.5px; font-weight:600; color:var(--text-primary); margin-bottom:4px; line-height:1.4; }
+  .card-client { font-size:11.5px; color:var(--text-secondary); margin-bottom:12px; display:flex; align-items:center; gap:4px; }
+  .card-progress { margin-bottom:10px; }
+  .prog-top { display:flex; justify-content:space-between; margin-bottom:5px; }
+  .prog-label { font-size:11px; color:var(--text-secondary); }
+  .prog-val { font-size:11px; font-weight:600; color:var(--text-primary); }
+  .prog-bar { height:5px; background:#eee; border-radius:10px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:10px; transition:width .3s; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; }
+  .card-avatars { display:flex; }
+  .card-avatar { width:26px; height:26px; border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; margin-left:-6px; }
+  .card-avatar:first-child { margin-left:0; }
+  .card-due { font-size:11px; color:var(--text-secondary); display:flex; align-items:center; gap:4px; }
+  .card-due.overdue { color:var(--danger); }
+  .card-comments { display:flex; align-items:center; gap:3px; font-size:11px; color:var(--text-secondary); }
+
+  /* LIST VIEW */
+  .list-view { display:none; }
+  .list-view.active { display:block; }
+  .kanban-board.hidden { display:none; }
+  .list-table { width:100%; border-collapse:collapse; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .list-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:var(--text-secondary); padding:12px 18px; text-align:left; background:#fafafe; border-bottom:1px solid var(--border); }
+  .list-table td { padding:14px 18px; font-size:13px; border-bottom:1px solid #f4f4f9; vertical-align:middle; }
+  .list-table tr:last-child td { border-bottom:none; }
+  .list-table tr:hover td { background:#fafafe; }
+  .project-name-cell { font-weight:600; color:var(--text-primary); }
+  .project-name-cell small { font-weight:400; color:var(--text-secondary); font-size:11.5px; display:block; margin-top:2px; }
+  .list-progress { display:flex; align-items:center; gap:10px; }
+  .list-prog-bar { flex:1; height:5px; background:#eee; border-radius:10px; overflow:hidden; max-width:100px; }
+  .list-prog-fill { height:100%; border-radius:10px; }
+  .list-prog-val { font-size:11.5px; font-weight:600; color:var(--text-secondary); }
+  .action-btn { width:30px; height:30px; border-radius:6px; border:none; background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:12px; transition:all .2s; }
+  .action-btn:hover { background:var(--primary-light); color:var(--primary); }
+
+  /* STATUS COLORS */
+  .col-todo .kanban-col-title { color:#6e6b7b; }
+  .col-inprogress .kanban-col-title { color:var(--primary); }
+  .col-review .kanban-col-title { color:var(--warning); }
+  .col-done .kanban-col-title { color:var(--success); }
+  .col-todo { border-top:3px solid #6e6b7b; }
+  .col-inprogress { border-top:3px solid var(--primary); }
+  .col-review { border-top:3px solid var(--warning); }
+  .col-done { border-top:3px solid var(--success); }
+
+  .badge { font-size:10.5px; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-block; }
+  .badge-todo { background:#f0f0f0; color:#6e6b7b; }
+  .badge-progress { background:var(--primary-light); color:var(--primary); }
+  .badge-review { background:var(--warning-light); color:var(--warning); }
+  .badge-done { background:var(--success-light); color:var(--success); }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(30,28,60,.45); z-index:200; display:none; align-items:center; justify-content:center; backdrop-filter:blur(2px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:16px; width:560px; max-width:95vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(51,48,100,.2); animation:modalIn .25s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:none; } }
+  .modal-header { padding:22px 26px 0; display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-size:17px; font-weight:700; }
+  .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-size:14px; }
+  .modal-close:hover { background:var(--danger-light); color:var(--danger); }
+  .modal-body { padding:20px 26px 26px; }
+  .form-group { margin-bottom:18px; }
+  .form-label { font-size:12.5px; font-weight:600; color:var(--text-primary); margin-bottom:6px; display:block; }
+  .form-input { width:100%; padding:9px 14px; border-radius:8px; border:1.5px solid var(--border); font-size:13.5px; font-family:inherit; color:var(--text-primary); outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(115,103,240,.1); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a1a4b5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+  .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+
+  @media(max-width:1200px) { .kanban-board { grid-template-columns:repeat(2,1fr); } .stats-row { grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:900px) { :root { --sidebar-width:220px; } }
+  @media(max-width:700px) { .sidebar { transform:translateX(-100%); } .main { margin-left:0; } .kanban-board { grid-template-columns:1fr; } .content { padding:16px; } }
+
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-thumb { background:#d0d0e8; border-radius:10px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">F</div>
+    <div class="logo-text">Freelance<span>OS</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Main</div>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-gauge-high"></i><span class="nav-tooltip">Dashboard</span><span class="nav-item-label">Dashboard</span></a>
+    <a class="nav-item active" href="#"><i class="fa-solid fa-folder-open"></i><span class="nav-tooltip">Projects</span><span class="nav-item-label">Projects</span><span class="nav-badge">4</span></a>
+    <a class="nav-item" href="calendar.html"><i class="fa-solid fa-calendar-days"></i><span class="nav-tooltip">Calendar</span><span class="nav-item-label">Calendar</span></a>
+    <div class="nav-section-title">Finance</div>
+    <a class="nav-item" href="invoices.html"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-tooltip">Invoices</span><span class="nav-item-label">Invoices</span><span class="nav-badge warning">2</span></a>
+    <a class="nav-item" href="#"><i class="fa-solid fa-chart-line"></i><span class="nav-tooltip">Revenue</span><span class="nav-item-label">Revenue</span></a>
+    <div class="nav-section-title">Clients</div>
+    <a class="nav-item" href="clients.html"><i class="fa-solid fa-users"></i><span class="nav-tooltip">Clients</span><span class="nav-item-label">Clients</span></a>
+    <a class="nav-item" href="#"><i class="fa-solid fa-envelope"></i><span class="nav-tooltip">Messages</span><span class="nav-item-label">Messages</span></a>
+    <div class="nav-section-title">Settings</div>
+    <a class="nav-item" href="#"><i class="fa-solid fa-gear"></i><span class="nav-tooltip">Settings</span><span class="nav-item-label">Settings</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">JD</div>
+      <div class="user-info">
+        <div class="user-name">John Doe</div>
+        <div class="user-role">Freelancer</div>
+      </div>
+      <i class="fa-solid fa-ellipsis-vertical"></i>
+    </div>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="사이드바 접기/펼치기"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></button>
+
+
+<!-- MAIN -->
+<div class="main">
+  <header class="header">
+    <div class="header-left">
+      <div>
+        <div class="header-title">Projects</div>
+        <div class="breadcrumb">Home <i class="fa-solid fa-chevron-right" style="font-size:9px"></i> <span>Projects</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button class="header-btn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
+      <div class="header-avatar">JD</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <!-- PAGE TOP -->
+    <div class="page-top">
+      <div>
+        <div class="page-title">프로젝트 관리</div>
+        <div class="page-subtitle">총 8개 프로젝트 · 4개 진행 중</div>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('newProjectModal').classList.add('open')">
+        <i class="fa-solid fa-plus"></i> 새 프로젝트
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--primary-light);color:var(--primary)"><i class="fa-solid fa-layer-group"></i></div>
+        <div><div class="mini-stat-val">8</div><div class="mini-stat-label">전체 프로젝트</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--info-light);color:var(--info)"><i class="fa-solid fa-spinner"></i></div>
+        <div><div class="mini-stat-val">4</div><div class="mini-stat-label">진행 중</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--warning-light);color:var(--warning)"><i class="fa-solid fa-clock"></i></div>
+        <div><div class="mini-stat-val">2</div><div class="mini-stat-label">검토 대기</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:var(--success-light);color:var(--success)"><i class="fa-solid fa-check-circle"></i></div>
+        <div><div class="mini-stat-val">2</div><div class="mini-stat-label">완료</div></div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-tabs">
+        <button class="filter-tab active">전체</button>
+        <button class="filter-tab">진행 중</button>
+        <button class="filter-tab">검토</button>
+        <button class="filter-tab">완료</button>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="프로젝트 검색...">
+      </div>
+      <select class="select-filter">
+        <option>모든 클라이언트</option>
+        <option>(주)한국패션</option>
+        <option>스타트업A</option>
+        <option>테크벤처B</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="kanbanBtn" onclick="setView('kanban')"><i class="fa-solid fa-table-columns"></i></button>
+        <button class="view-btn" id="listBtn" onclick="setView('list')"><i class="fa-solid fa-list"></i></button>
+      </div>
+    </div>
+
+    <!-- KANBAN BOARD -->
+    <div class="kanban-board" id="kanbanView">
+      <!-- TO DO -->
+      <div class="kanban-col col-todo">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title"><i class="fa-solid fa-circle" style="font-size:8px;color:#6e6b7b"></i> 대기 <span class="col-count">2</span></div>
+          <button class="kanban-add"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:#f0f0f0;color:#6e6b7b">기획</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">HR 시스템 UX 리서치</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 엔터프라이즈C</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">10%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:10%;background:#6e6b7b"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--primary)">J</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 4/30</div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:#f0f0f0;color:#6e6b7b">콘텐츠</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">블로그 콘텐츠 전략 수립</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 미디어그룹D</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">5%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:5%;background:#6e6b7b"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--info)">J</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 5/10</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IN PROGRESS -->
+      <div class="kanban-col col-inprogress">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title"><i class="fa-solid fa-circle" style="font-size:8px;color:var(--primary)"></i> 진행 중 <span class="col-count">4</span></div>
+          <button class="kanban-add"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--primary-light);color:var(--primary)">웹</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">쇼핑몰 웹사이트 리뉴얼</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> (주)한국패션</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">72%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:72%;background:var(--primary)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--primary)">J</div>
+              <div class="card-avatar" style="background:var(--info)">K</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 3/31</div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--primary-light);color:var(--primary)">UI/UX</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">모바일 앱 UI/UX 디자인</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 테크벤처B</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">45%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:45%;background:var(--primary)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--warning)">J</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 4/15</div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--primary-light);color:var(--primary)">랜딩</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">마케팅 랜딩페이지</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 글로벌커머스</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">30%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:30%;background:var(--primary)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--success)">J</div>
+            </div>
+            <div class="card-due overdue"><i class="fa-regular fa-calendar"></i> 3/15 ⚠</div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--primary-light);color:var(--primary)">SEO</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">SEO 최적화 & 분석</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 미디어그룹D</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">60%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:60%;background:var(--primary)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--danger)">J</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 4/05</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEW -->
+      <div class="kanban-col col-review">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title"><i class="fa-solid fa-circle" style="font-size:8px;color:var(--warning)"></i> 검토 중 <span class="col-count">2</span></div>
+          <button class="kanban-add"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--warning-light);color:var(--warning)">브랜드</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">브랜드 아이덴티티 디자인</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 스타트업A</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">90%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:90%;background:var(--warning)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--warning)">J</div>
+              <div class="card-avatar" style="background:var(--primary)">L</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 3/22</div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--warning-light);color:var(--warning)">앱</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">iOS 앱 아이콘 & 스플래시</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 테크벤처B</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">95%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:95%;background:var(--warning)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--info)">J</div>
+            </div>
+            <div class="card-due"><i class="fa-regular fa-calendar"></i> 3/20</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DONE -->
+      <div class="kanban-col col-done">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title"><i class="fa-solid fa-circle" style="font-size:8px;color:var(--success)"></i> 완료 <span class="col-count">2</span></div>
+          <button class="kanban-add"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="project-card" style="opacity:.75">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--success-light);color:var(--success)">로고</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">로고 디자인 1차</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 스타트업A</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">100%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--success)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--success)">J</div>
+            </div>
+            <div class="card-due" style="color:var(--success)"><i class="fa-solid fa-check"></i> 3/10 완료</div>
+          </div>
+        </div>
+
+        <div class="project-card" style="opacity:.75">
+          <div class="card-top">
+            <span class="card-tag" style="background:var(--success-light);color:var(--success)">웹</span>
+            <span class="card-menu"><i class="fa-solid fa-ellipsis"></i></span>
+          </div>
+          <div class="card-title-text">포트폴리오 사이트 제작</div>
+          <div class="card-client"><i class="fa-solid fa-building" style="font-size:10px"></i> 개인 클라이언트E</div>
+          <div class="card-progress">
+            <div class="prog-top"><span class="prog-label">진행률</span><span class="prog-val">100%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--success)"></div></div>
+          </div>
+          <div class="card-footer">
+            <div class="card-avatars">
+              <div class="card-avatar" style="background:var(--primary)">J</div>
+            </div>
+            <div class="card-due" style="color:var(--success)"><i class="fa-solid fa-check"></i> 2/28 완료</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="list-view" id="listView">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>프로젝트명</th>
+            <th>클라이언트</th>
+            <th>상태</th>
+            <th>진행률</th>
+            <th>마감일</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="project-name-cell">쇼핑몰 웹사이트 리뉴얼<small>웹 개발 · 리디자인</small></div></td>
+            <td>(주)한국패션</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+            <td><div class="list-progress"><div class="list-prog-bar"><div class="list-prog-fill" style="width:72%;background:var(--primary)"></div></div><span class="list-prog-val">72%</span></div></td>
+            <td>2025.03.31</td>
+            <td style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><div class="project-name-cell">브랜드 아이덴티티 디자인<small>브랜딩</small></div></td>
+            <td>스타트업A</td>
+            <td><span class="badge badge-review">검토 중</span></td>
+            <td><div class="list-progress"><div class="list-prog-bar"><div class="list-prog-fill" style="width:90%;background:var(--warning)"></div></div><span class="list-prog-val">90%</span></div></td>
+            <td>2025.03.22</td>
+            <td style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><div class="project-name-cell">모바일 앱 UI/UX<small>UI 디자인</small></div></td>
+            <td>테크벤처B</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+            <td><div class="list-progress"><div class="list-prog-bar"><div class="list-prog-fill" style="width:45%;background:var(--primary)"></div></div><span class="list-prog-val">45%</span></div></td>
+            <td>2025.04.15</td>
+            <td style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><div class="project-name-cell">마케팅 랜딩페이지<small>웹 개발</small></div></td>
+            <td>글로벌커머스</td>
+            <td><span class="badge badge-progress">진행 중</span></td>
+            <td><div class="list-progress"><div class="list-prog-bar"><div class="list-prog-fill" style="width:30%;background:var(--primary)"></div></div><span class="list-prog-val">30%</span></div></td>
+            <td style="color:var(--danger);font-weight:600">2025.03.15 ⚠</td>
+            <td style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+          <tr>
+            <td><div class="project-name-cell">로고 디자인 1차<small>브랜딩</small></div></td>
+            <td>스타트업A</td>
+            <td><span class="badge badge-done">완료</span></td>
+            <td><div class="list-progress"><div class="list-prog-bar"><div class="list-prog-fill" style="width:100%;background:var(--success)"></div></div><span class="list-prog-val">100%</span></div></td>
+            <td>2025.03.10</td>
+            <td style="display:flex;gap:4px"><button class="action-btn"><i class="fa-solid fa-eye"></i></button><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PROJECT MODAL -->
+<div class="modal-overlay" id="newProjectModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">새 프로젝트 추가</div>
+      <button class="modal-close" onclick="document.getElementById('newProjectModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">프로젝트명 *</label>
+        <input class="form-input" type="text" placeholder="예: 쇼핑몰 리뉴얼 프로젝트">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">클라이언트 *</label>
+          <select class="form-input form-select">
+            <option value="">클라이언트 선택</option>
+            <option>(주)한국패션</option>
+            <option>스타트업A</option>
+            <option>테크벤처B</option>
+            <option>글로벌커머스</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">카테고리</label>
+          <select class="form-input form-select">
+            <option>웹 개발</option>
+            <option>UI/UX</option>
+            <option>브랜딩</option>
+            <option>콘텐츠</option>
+            <option>SEO</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">시작일</label>
+          <input class="form-input" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">마감일 *</label>
+          <input class="form-input" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">예산 (원)</label>
+          <input class="form-input" type="number" placeholder="1,000,000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-input form-select">
+            <option>대기</option>
+            <option>진행 중</option>
+            <option>검토 중</option>
+            <option>완료</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모</label>
+        <textarea class="form-input" rows="3" placeholder="프로젝트 관련 메모..." style="resize:vertical"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('newProjectModal').classList.remove('open')">취소</button>
+        <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> 프로젝트 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setView(type) {
+    const kanban = document.getElementById('kanbanView');
+    const list = document.getElementById('listView');
+    const kanbanBtn = document.getElementById('kanbanBtn');
+    const listBtn = document.getElementById('listBtn');
+    if (type === 'kanban') {
+      kanban.classList.remove('hidden');
+      list.classList.remove('active');
+      kanbanBtn.classList.add('active');
+      listBtn.classList.remove('active');
+    } else {
+      kanban.classList.add('hidden');
+      list.classList.add('active');
+      listBtn.classList.add('active');
+      kanbanBtn.classList.remove('active');
+    }
+  }
+
+  // Filter tabs
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+
+<script id="sidebarToggleScript">
+  (function(){
+    var STORAGE_KEY = 'fos_sidebar_collapsed';
+    var sidebar = document.querySelector('.sidebar');
+    var toggle  = document.getElementById('sidebarToggle');
+    var main    = document.querySelector('.main');
+
+    function applyCollapsed(collapsed, animate){
+      if(!animate){
+        sidebar.style.transition = 'none';
+        toggle.style.transition  = 'none';
+        if(main) main.style.transition = 'none';
+      }
+      if(collapsed){
+        sidebar.classList.add('collapsed');
+        toggle.classList.add('collapsed');
+        if(main) main.style.marginLeft = 'var(--sidebar-collapsed-width)';
+      } else {
+        sidebar.classList.remove('collapsed');
+        toggle.classList.remove('collapsed');
+        if(main) main.style.marginLeft = 'var(--sidebar-width)';
+      }
+      if(!animate){
+        // force reflow then restore transitions
+        sidebar.offsetHeight;
+        sidebar.style.transition = '';
+        toggle.style.transition  = '';
+        if(main) main.style.transition = '';
+      }
+    }
+
+    window.toggleSidebar = function(){
+      var isCollapsed = sidebar.classList.contains('collapsed');
+      applyCollapsed(!isCollapsed, true);
+      localStorage.setItem(STORAGE_KEY, !isCollapsed ? '1' : '0');
+    };
+
+    // Restore saved state without animation
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if(saved === '1') applyCollapsed(true, false);
+
+    // Special: calendar layout uses cal-layout flex, not margin-left
+    if(document.querySelector('.cal-layout')){
+      function syncCalLayout(collapsed){
+        var calSidebar = document.querySelector('.cal-sidebar');
+        // no margin needed — handled by sidebar width in flex layout
+      }
+    }
+  })();
+</script>
+
+</body>
+</html>
